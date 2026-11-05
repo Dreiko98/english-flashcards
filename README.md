@@ -58,8 +58,39 @@ npm run dev
 
 ## Cómo funciona el algoritmo
 
-Pendiente (fase 2): se documentará aquí el algoritmo SM-2 de `src/lib/scheduler.ts` una vez
-implementado.
+El algoritmo vive en tres módulos puros y testeados con Vitest (`src/lib/`), sin dependencias de
+Supabase ni de la UI:
+
+- **`studyDay.ts`:** el "día de estudio" empieza a las 04:00 hora local (como en Anki), no a
+  medianoche. `studyDayStart` calcula a qué día de estudio pertenece una fecha; `addStudyDays`
+  suma N días de estudio completos. Usa los métodos locales de `Date` (`setHours`/`setDate`), que
+  mantienen la hora de pared (04:00) correcta incluso al cruzar un cambio de hora de verano/invierno.
+- **`scheduler.ts`:** la función pura `schedule(card, rating, now, config?, rng?)` implementa SM-2.
+  El campo `step` indica el índice del próximo retraso de aprendizaje/reaprendizaje a aplicar: con
+  "Bien" se sirve el retraso del paso actual y se avanza uno; cuando el índice se sale del array de
+  pasos, la tarjeta gradúa. Esto es lo que hace que `learningSteps = [1, 10]` necesite exactamente
+  tres pulsaciones de "Bien" para graduar (1 min → 10 min → graduar), tal como pide el criterio de
+  aceptación.
+  - **Decisión no trivial:** al fallar una tarjeta de repaso (lapse), el intervalo posterior al
+    fallo (`max(1, round(interval * lapseMultiplier))`) se guarda temporalmente en el propio campo
+    `intervalDays` mientras la tarjeta está en `relearning` (ese campo no se usa para nada más en
+    ese estado), y se aplica al graduar de vuelta a `review`.
+  - **Decisión no trivial:** al entrar en reaprendizaje, el campo `step` se inicializa a
+    `relearningSteps.length` (no a 0) porque el primer paso de reaprendizaje ya se "sirve" en ese
+    mismo momento (el `due` se fija a `now + relearningSteps[0]`). Con la configuración por defecto
+    (un único paso de 10 min), esto hace que una sola respuesta "Bien" tras el fallo gradúe la
+    tarjeta, como en Anki. Pulsar "Otra vez" dentro del reaprendizaje reinicia `step` a 0 y obliga a
+    repetir el paso completo.
+  - El fuzz aleatorio (±5 %) solo se aplica a los intervalos calculados a partir de una tarjeta ya
+    en `review` (Difícil/Bien/Fácil), no a los intervalos fijos de graduación
+    (`graduatingInterval`/`easyInterval`) ni al intervalo de reaprendizaje guardado.
+- **`queue.ts`:** `buildStudyQueue` arma la cola de la sesión: primero las tarjetas de
+  aprendizaje/reaprendizaje ya vencidas, después las de repaso vencidas (con un barajado ligero por
+  ventanas) intercaladas con tarjetas nuevas (una nueva cada 3 repasos, por defecto), respetando el
+  límite `new_per_day` de cada mazo menos las nuevas ya estudiadas hoy (contadas en los
+  `review_logs` desde el inicio del día de estudio). Si no queda nada vencido pero hay tarjetas de
+  aprendizaje programadas más tarde ese mismo día, se muestran antes de tiempo en vez de terminar la
+  sesión, igual que hace Anki.
 
 ## Ideas futuras (fuera de alcance de este proyecto)
 
