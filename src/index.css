@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  /* Prevents iOS Safari from zooming in when a 16px+ input is focused */
+  font-size: 16px;
+}
