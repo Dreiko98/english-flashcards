@@ -2,14 +2,17 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { BrowserRouter } from 'react-router'
 import App from './App'
+import { AuthProvider } from './context/AuthContext'
 
 describe('App', () => {
-  it('renders the home page by default', () => {
+  it('redirects to the login page when there is no session', async () => {
     render(
       <BrowserRouter>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </BrowserRouter>,
     )
-    expect(screen.getByRole('heading', { name: 'Mazos' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument()
   })
 })
