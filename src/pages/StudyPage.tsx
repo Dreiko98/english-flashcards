@@ -5,6 +5,7 @@ import { useOfflineSync } from '@/hooks/useOfflineSync'
 import { useSpeech } from '@/hooks/useSpeech'
 import { useStudySession } from '@/hooks/useStudySession'
 import { formatInterval } from '@/lib/formatInterval'
+import { getAutoRead, setAutoRead as persistAutoRead } from '@/lib/preferences'
 import type { Rating } from '@/lib/scheduler'
 
 const RATING_BUTTONS: { rating: Rating; label: string; className: string }[] = [
@@ -13,8 +14,6 @@ const RATING_BUTTONS: { rating: Rating; label: string; className: string }[] = [
   { rating: 3, label: 'Bien', className: 'bg-green-600 hover:bg-green-700' },
   { rating: 4, label: 'Fácil', className: 'bg-blue-600 hover:bg-blue-700' },
 ]
-
-const AUTO_READ_KEY = 'flashcards:auto-read'
 
 function OfflineStatus({ isOnline, pendingCount }: { isOnline: boolean; pendingCount: number }) {
   if (isOnline && pendingCount === 0) return null
@@ -33,7 +32,7 @@ export function StudyPage() {
   const offline = useOfflineSync()
 
   const [revealed, setRevealed] = useState(false)
-  const [autoRead, setAutoRead] = useState(() => localStorage.getItem(AUTO_READ_KEY) === 'true')
+  const [autoRead, setAutoRead] = useState(() => getAutoRead())
   // Lazy useState initializer, not useRef(Date.now()): reading the clock is only safe to do
   // once, during the documented "compute initial state lazily" escape hatch.
   const [startedAt] = useState(() => Date.now())
@@ -63,7 +62,7 @@ export function StudyPage() {
   function toggleAutoRead() {
     const next = !autoRead
     setAutoRead(next)
-    localStorage.setItem(AUTO_READ_KEY, String(next))
+    persistAutoRead(next)
   }
 
   // Shared by both the rating buttons and the keyboard shortcuts below, so the offline-pending
