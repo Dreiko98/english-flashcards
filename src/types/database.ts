@@ -1,6 +1,11 @@
 import type { CardState } from '@/lib/scheduler'
 
-export interface DeckRow {
+// Every shape below is a `type` alias, not an `interface`. supabase-js's generic Database
+// constraint check (Schema extends GenericSchema ? Schema : never) silently collapses to
+// `never` for ANY table whose Row/Insert/Update is declared with `interface` instead of a
+// plain object `type` — same fields, same structure, interface alone breaks it. Confirmed by
+// bisecting in isolation against a minimal repro; keep these as `type` to avoid regressing.
+export type DeckRow = {
   id: string
   user_id: string
   name: string
@@ -10,14 +15,26 @@ export interface DeckRow {
   updated_at: string
 }
 
-export type DeckInsert = Partial<
-  Pick<DeckRow, 'id' | 'user_id' | 'description' | 'new_per_day' | 'created_at' | 'updated_at'>
-> &
-  Pick<DeckRow, 'name'>
+export type DeckInsert = {
+  id?: string
+  user_id?: string
+  name: string
+  description?: string | null
+  new_per_day?: number
+  created_at?: string
+  updated_at?: string
+}
 
-export type DeckUpdate = Partial<Omit<DeckRow, 'id'>>
+export type DeckUpdate = {
+  user_id?: string
+  name?: string
+  description?: string | null
+  new_per_day?: number
+  created_at?: string
+  updated_at?: string
+}
 
-export interface CardRow {
+export type CardRow = {
   id: string
   user_id: string
   deck_id: string
@@ -39,12 +56,50 @@ export interface CardRow {
   updated_at: string
 }
 
-export type CardInsert = Partial<Omit<CardRow, 'id' | 'deck_id' | 'front' | 'back' | 'user_id'>> &
-  Pick<CardRow, 'deck_id' | 'front' | 'back'>
+export type CardInsert = {
+  id?: string
+  user_id?: string
+  deck_id: string
+  front: string
+  back: string
+  example?: string | null
+  notes?: string | null
+  tags?: string[]
+  tts_lang?: string
+  state?: CardState
+  due?: string
+  interval_days?: number
+  ease?: number
+  step?: number
+  reps?: number
+  lapses?: number
+  suspended?: boolean
+  created_at?: string
+  updated_at?: string
+}
 
-export type CardUpdate = Partial<Omit<CardRow, 'id'>>
+export type CardUpdate = {
+  user_id?: string
+  deck_id?: string
+  front?: string
+  back?: string
+  example?: string | null
+  notes?: string | null
+  tags?: string[]
+  tts_lang?: string
+  state?: CardState
+  due?: string
+  interval_days?: number
+  ease?: number
+  step?: number
+  reps?: number
+  lapses?: number
+  suspended?: boolean
+  created_at?: string
+  updated_at?: string
+}
 
-export interface ReviewLogRow {
+export type ReviewLogRow = {
   id: string
   user_id: string
   card_id: string
@@ -58,20 +113,35 @@ export interface ReviewLogRow {
   reviewed_at: string
 }
 
-export type ReviewLogInsert = Partial<Omit<ReviewLogRow, 'id' | 'reviewed_at' | 'user_id'>> &
-  Pick<
-    ReviewLogRow,
-    | 'card_id'
-    | 'deck_id'
-    | 'rating'
-    | 'state_before'
-    | 'interval_before'
-    | 'interval_after'
-    | 'ease_after'
-  >
+export type ReviewLogInsert = {
+  id?: string
+  user_id?: string
+  card_id: string
+  deck_id: string
+  rating: 1 | 2 | 3 | 4
+  state_before: CardState
+  interval_before: number
+  interval_after: number
+  ease_after: number
+  duration_ms?: number
+  reviewed_at?: string
+}
+
+export type ReviewLogUpdate = {
+  user_id?: string
+  card_id?: string
+  deck_id?: string
+  rating?: 1 | 2 | 3 | 4
+  state_before?: CardState
+  interval_before?: number
+  interval_after?: number
+  ease_after?: number
+  duration_ms?: number
+  reviewed_at?: string
+}
 
 /** Mirrors the ScheduleResult shape from src/lib/scheduler.ts, serialized for the RPC call. */
-export interface ReviewCardNewState {
+export type ReviewCardNewState = {
   state: CardState
   due: string
   intervalDays: number
@@ -81,24 +151,26 @@ export interface ReviewCardNewState {
   lapses: number
 }
 
-export interface ReviewCardArgs {
+export type ReviewCardArgs = {
   p_card_id: string
   p_rating: 1 | 2 | 3 | 4
   p_new_state: ReviewCardNewState
   p_duration_ms: number
 }
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      decks: { Row: DeckRow; Insert: DeckInsert; Update: DeckUpdate }
-      cards: { Row: CardRow; Insert: CardInsert; Update: CardUpdate }
+      decks: { Row: DeckRow; Insert: DeckInsert; Update: DeckUpdate; Relationships: [] }
+      cards: { Row: CardRow; Insert: CardInsert; Update: CardUpdate; Relationships: [] }
       review_logs: {
         Row: ReviewLogRow
         Insert: ReviewLogInsert
-        Update: Partial<ReviewLogInsert>
+        Update: ReviewLogUpdate
+        Relationships: []
       }
     }
+    Views: Record<string, never>
     Functions: {
       review_card: { Args: ReviewCardArgs; Returns: void }
     }

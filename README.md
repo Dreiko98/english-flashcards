@@ -55,6 +55,22 @@ npm run dev
   `<html>` para poder combinar detección automática del sistema con un toggle manual persistente.
 - **Alias `@/*` → `src/*`:** configurado en `tsconfig.app.json` y `vite.config.ts` para imports más
   limpios a medida que crezca el proyecto.
+- **Los tipos de `src/types/database.ts` usan `type`, no `interface`:** con `@supabase/supabase-js`
+  2.119, declarar las filas (`Row`/`Insert`/`Update`) de las tablas como `interface` hace que el
+  chequeo genérico interno del cliente (`Schema extends GenericSchema ? Schema : never`) colapse a
+  `never` para TODAS las tablas — mismos campos, mismo tipo, solo cambia `interface` por `type` y
+  deja de pasar. Aislado con un repro mínimo antes de aplicar el cambio; si se vuelve a tocar ese
+  archivo, mantener `type`.
+- **`react-hooks/set-state-in-effect` desactivada:** `eslint-plugin-react-hooks` v7 empaqueta el
+  análisis estático del React Compiler en su config "recommended" aunque el proyecto no use el
+  Compiler. Esa regla marca como error el patrón estándar "fetch al montar" en un hook
+  personalizado (efecto que llama a una función async que en algún momento hace `setState`), que
+  es perfectamente válido en React 18 sin `useEffectEvent` (API de React 19). Las versiones del
+  plugin sin esa regla solo soportan ESLint hasta v9, y aquí se usa v10, así que desactivarla es
+  más simple que bajar de versión ambos paquetes.
+- **Racha (streak) calculada ya en el Home, no solo en Estadísticas:** la sección 6.1 del prompt
+  pide mostrarla en el resumen del día, así que `src/lib/streak.ts` se implementó en esta fase y se
+  reutilizará en la fase de Estadísticas.
 
 ## Cómo funciona el algoritmo
 

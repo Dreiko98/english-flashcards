@@ -6,6 +6,7 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { BrowsePage } from './pages/BrowsePage'
+import { CardFormPage } from './pages/CardFormPage'
 import { HomePage } from './pages/HomePage'
 import { ImportPage } from './pages/ImportPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -25,6 +26,8 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="study/:deckId" element={<StudyPage />} />
           <Route path="browse" element={<BrowsePage />} />
+          <Route path="cards/new" element={<CardFormPage />} />
+          <Route path="cards/:cardId/edit" element={<CardFormPage />} />
           <Route path="import" element={<ImportPage />} />
           <Route path="stats" element={<StatsPage />} />
           <Route path="settings" element={<SettingsPage />} />
