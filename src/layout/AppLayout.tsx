@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: '/import', label: 'Importar', icon: '📥', end: false },
   { to: '/stats', label: 'Estadísticas', icon: '📊', end: false },
   { to: '/settings', label: 'Ajustes', icon: '⚙️', end: false },
+  { to: '/help', label: 'Ayuda', icon: '❓', end: false },
 ] as const
 
 function navLinkClassName({ isActive }: { isActive: boolean }) {

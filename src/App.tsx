@@ -7,6 +7,7 @@ import { RegisterPage } from './pages/auth/RegisterPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { BrowsePage } from './pages/BrowsePage'
 import { CardFormPage } from './pages/CardFormPage'
+import { HelpPage } from './pages/HelpPage'
 import { HomePage } from './pages/HomePage'
 import { ImportPage } from './pages/ImportPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -31,6 +32,7 @@ function App() {
           <Route path="import" element={<ImportPage />} />
           <Route path="stats" element={<StatsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="help" element={<HelpPage />} />
         </Route>
       </Route>
     </Routes>
