@@ -30,6 +30,24 @@ npm run dev
 | `VITE_SUPABASE_URL`      | URL del proyecto Supabase                                                       |
 | `VITE_SUPABASE_ANON_KEY` | Clave pública (anon) de Supabase. Es pública por diseño; la seguridad la da RLS |
 
+## Despliegue
+
+Producción: **https://germanmallo-flashcards.netlify.app**
+
+- Desplegado en Netlify a partir del repo de GitHub (`netlify.toml`: `npm run build` → `dist`, con
+  redirección SPA `/* → /index.html`).
+- Variables de entorno (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) configuradas en Netlify,
+  iguales que en `.env.local`.
+- La URL de Netlify está añadida a las **Redirect URLs** de Supabase (Authentication → URL
+  Configuration), junto a `http://localhost:5173`, para que el login funcione en ambos sitios.
+- Cada push a `main` dispara un nuevo deploy automático.
+
+### Instalar la PWA
+
+- **iPhone (Safari):** abre la URL → icono Compartir → **Añadir a pantalla de inicio**.
+- **Android (Chrome):** abre la URL → menú (⋮) → **Instalar aplicación** / **Añadir a pantalla de
+  inicio**.
+
 ## Scripts
 
 - `npm run dev` — servidor de desarrollo
